@@ -6,8 +6,11 @@
 </head>
 <body>
     <h1>Chatroom!</h1>
-    <input type="text" id="messageInput" placeholder="Enter your message...">
-    <button onclick="sendMessage()">Send</button>
+    <div class="container">
+        <input type="text" id="messageInput" placeholder="Enter your message...">
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="changeName()">Change Nickname</button>
+    </div>
     <ul id="messages"></ul>
     <script src="/static/js/scripts.js"></script>
 </body>

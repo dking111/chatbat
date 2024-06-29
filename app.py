@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.requests import Request
 import json
+
 app = FastAPI()
 
 # Mount static files
@@ -21,38 +22,43 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            #recieve and unload data
             data = await websocket.receive_text()
             data_json = json.loads(data)
-            #catch all message types
+
+            # Handle different message types
             match data_json["type"]:
                 case "message":
                     message = data_json["data"]
-                    sender_name = websocket_clients[websocket]
+                    sender_name = websocket_clients.get(websocket, "Unknown")
                     for client in websocket_clients:
-                        await client.send_text(json.dumps({"type":"message", "data": f"{sender_name}: {message}"}))
-                        
+                        await client.send_text(json.dumps({"type": "message", "data": f"{sender_name}: {message}"}))
+
+                case "name_request":
+                    name = data_json["data"]
+                    if name in websocket_clients.values():
+                        await websocket.send_text(json.dumps({"type": "name_request_response", "data": name, "bool": False}))
+                    else:
+                        await websocket.send_text(json.dumps({"type": "name_request_response", "data": name, "bool": True}))
+
                 case "name_new":
                     name = data_json["data"]
                     websocket_clients[websocket] = name
                     for client in websocket_clients:
-                        await client.send_text(json.dumps({"type":"message_server","data":f"{name} has joined the chat!"}))
+                        await client.send_text(json.dumps({"type": "message_server", "data": f"{name} has joined the chat!"}))
 
                 case "name_change":
                     name = data_json["data"]
                     old_name = websocket_clients[websocket]
                     websocket_clients[websocket] = name
                     for client in websocket_clients:
-                        await client.send_text(json.dumps({"type":"message_server","data":f"{old_name} has changed their name to {name}!"}))
-
+                        await client.send_text(json.dumps({"type": "message_server", "data": f"{old_name} has changed their name to {name}!"}))
 
     except WebSocketDisconnect:
-        name = websocket_clients[websocket]
-        del websocket_clients[websocket]
-        # Notify all clients about the disconnection
+        name = websocket_clients.pop(websocket)
         for client in websocket_clients:
-            await client.send_text(json.dumps({"type":"message_server","data":f"{name} has left the chat."}))
-
+            if (name):
+                await client.send_text(json.dumps({"type": "message_server", "data": f"{name} has left the chat."}))
+            
 # Index route to serve the HTML page
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):

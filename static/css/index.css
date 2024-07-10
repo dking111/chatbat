@@ -9,9 +9,8 @@ body {
     padding: 0;
 }
 
-#content{
+#content {
     margin-top: 10%;
-
 }
 
 h1 {
@@ -36,7 +35,7 @@ input[type="text"] {
     font-size: 16px;
 }
 
-button {
+#chatButton {
     padding: 10px 20px;
     border: none;
     background-color: #007bff;
@@ -46,6 +45,85 @@ button {
     cursor: pointer;
 }
 
-button:hover {
+#chatButton:hover {
     background-color: #0056b3;
 }
+
+#pfp {
+    padding: 5px;
+}
+
+.pfp-icon  {
+    padding: 2px;
+    border: 2px solid transparent;
+    border-radius: 100%;
+    background-color: transparent;
+}
+
+#pfp button.pfp-icon:hover {
+    border-color: #007bff;
+}
+
+
+
+
+
+ul {
+    list-style-type: none;
+  }
+  
+  li {
+    display: inline-block;
+  }
+  
+  input[type="radio"][id^="cb"] {
+    display: none;
+  }
+  
+  label {
+    padding: 10px;
+    display: block;
+    position: relative;
+    margin: 10px;
+    cursor: pointer;
+    
+  }
+  
+  label:before {
+    background-color: white;
+    color: white;
+    content: " ";
+    display: block;
+    border-radius: 50%;
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    line-height: 28px;
+    transition-duration: 0.4s;
+    transform: scale(0);
+  }
+  
+  label img {
+    transition-duration: 0.2s;
+    transform-origin: 50% 50%;
+    border-radius: 100%;
+  }
+  
+  :checked + label {
+    border-color: #ddd;
+  }
+  
+  :checked + label:before {
+    
+    background-color: grey;
+    transform: scale(1);
+  }
+  
+  :checked + label img {
+    transform: scale(0.9);
+    box-shadow: 0 0 5px #333;
+    z-index: -1;
+  }

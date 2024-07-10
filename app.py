@@ -42,23 +42,25 @@ async def websocket_endpoint(websocket: WebSocket):
                         except IndexError:
                             pass
                     #distributes messages accordingly
-                    sender_name = websocket_clients.get(websocket, "Unknown")
+                    sender_name = websocket_clients.get(websocket, "Unknown")["name"]
+                    sender_pfp = websocket_clients.get(websocket, "Unknown")["pfp"]
+                    print(f"sender_pfp: {sender_pfp}")
                     #whispers
                     if len(whispers) > 0:
                         for client_name in whispers:
                             client = await get_key_by_value(websocket_clients, client_name)
-                            await client.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}"}))
+                            await client.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}", "icon":sender_pfp}))
                             if client!=websocket:
-                                await websocket.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}"}))
+                                await websocket.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}", "icon":sender_pfp}))
                     else:
                         #mentions
                         for client in websocket_clients:
-                            client_name = websocket_clients.get(client,"Unknown")
+                            client_name = websocket_clients.get(client,"Unknown")["name"]
                             if client_name in mentions:
-                                await client.send_text(json.dumps({"type": "message_mention", "data": f"{sender_name}: {message}"}))
+                                await client.send_text(json.dumps({"type": "message_mention", "data": f"{sender_name}: {message}", "icon":sender_pfp}))
                         #messages
                             else:
-                                await client.send_text(json.dumps({"type": "message", "data": f"{sender_name}: {message}"}))
+                                await client.send_text(json.dumps({"type": "message", "data": f"{sender_name}: {message}", "icon":sender_pfp}))
 
                 case "name_request":
                     name = data_json["data"]
@@ -69,14 +71,16 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 case "name_new":
                     name = data_json["data"]
-                    websocket_clients[websocket] = name
+                    pfp = data_json["icon"]
+                    websocket_clients[websocket] = {"name":name,"pfp":pfp}
                     for client in websocket_clients:
                         await client.send_text(json.dumps({"type": "message_server", "data": f"{name} has joined the chat!"}))
 
                 case "name_change":
                     name = data_json["data"]
-                    old_name = websocket_clients[websocket]
-                    websocket_clients[websocket] = name
+                    pfp = data_json["icon"]
+                    old_name = websocket_clients[websocket]["name"]
+                    websocket_clients[websocket] = {"name":name,"pfp":pfp}
                     for client in websocket_clients:
                         await client.send_text(json.dumps({"type": "message_server", "data": f"{old_name} has changed their name to {name}!"}))
 

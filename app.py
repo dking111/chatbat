@@ -85,7 +85,7 @@ async def websocket_endpoint(websocket: WebSocket):
                         await client.send_text(json.dumps({"type": "message_server", "data": f"{old_name} has changed their name to {name}!"}))
 
     except WebSocketDisconnect:
-        name = websocket_clients.pop(websocket)
+        name = websocket_clients.pop(websocket)["name"]
         for client in websocket_clients:
             if (name):
                 await client.send_text(json.dumps({"type": "message_server", "data": f"{name} has left the chat."}))

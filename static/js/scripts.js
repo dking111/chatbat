@@ -42,6 +42,18 @@ window.onload = function() {
                             li.innerText = message["data"];
                             messagesUl.appendChild(li);
                             break;
+                        
+                        case "message_mention":
+                            li.innerHTML = `<mark>${message.data}</mark>`;
+                            messagesUl.appendChild(li);
+                            break;
+                        
+                        case "message_whisper":
+                            li.innerHTML = `<i>${message.data}</i>`;
+                            messagesUl.appendChild(li);
+                            break;
+
+
                         case "name_request_response":
                             if (message["bool"]){
                                 localStorage.setItem("chatName", message["data"]);
@@ -87,10 +99,12 @@ function sendName(){
 function sendMessage(){
     var messageInput = document.getElementById("messageInput");
     var message = messageInput.value;
+    if (message){   
     if (socket && socket.readyState === WebSocket.OPEN) {
         socket.send(JSON.stringify({type: "message", data: message}));
         messageInput.value = "";
     }
+}
 }
 
 function changeName(){
@@ -106,3 +120,9 @@ function changeName(){
         alert("Name cannot be empty");
     }
 }
+//event listener
+document.getElementById("messageInput").addEventListener("keyup", function(event) {
+    if (event.key === "Enter" ) {
+        sendMessage();
+    }
+});

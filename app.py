@@ -28,10 +28,37 @@ async def websocket_endpoint(websocket: WebSocket):
             # Handle different message types
             match data_json["type"]:
                 case "message":
+                    #string handling
                     message = data_json["data"]
+                    words = message.split(" ")
+                    mentions = []
+                    whispers = []
+                    for i in words:
+                        try:
+                            if i[0] == "@":
+                                mentions.append(i[1:])
+                            if i[0] == "\\":
+                                whispers.append(i[1:])
+                        except IndexError:
+                            pass
+                    #distributes messages accordingly
                     sender_name = websocket_clients.get(websocket, "Unknown")
-                    for client in websocket_clients:
-                        await client.send_text(json.dumps({"type": "message", "data": f"{sender_name}: {message}"}))
+                    #whispers
+                    if len(whispers) > 0:
+                        for client_name in whispers:
+                            client = await get_key_by_value(websocket_clients, client_name)
+                            await client.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}"}))
+                            if client!=websocket:
+                                await websocket.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}"}))
+                    else:
+                        #mentions
+                        for client in websocket_clients:
+                            client_name = websocket_clients.get(client,"Unknown")
+                            if client_name in mentions:
+                                await client.send_text(json.dumps({"type": "message_mention", "data": f"{sender_name}: {message}"}))
+                        #messages
+                            else:
+                                await client.send_text(json.dumps({"type": "message", "data": f"{sender_name}: {message}"}))
 
                 case "name_request":
                     name = data_json["data"]
@@ -69,6 +96,20 @@ async def index(request: Request):
 async def chat(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
 
+#helper function for finding dictionary key
+async def get_key_by_value(d, value):
+    for k, v in d.items():
+        if v == value:
+            return k
+    return None
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+#ROADMAP
+#@users done
+#Enter key, message cleanup done
+#whispers  done
+#profile pics?... maybe choose from a range

@@ -21,13 +21,20 @@ window.onload = function() {
                     break;
             }
         };
+        //Enter key
+        document.getElementById("nameInput").addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                sendName();
+            }
+        });
+
     } else if (path === '/chat') {
         // Chat page logic
         const name = localStorage.getItem("chatName");
         const pfp = localStorage.getItem("pfp");
         if (name) {
             socket.onopen = function(event) {
-                socket.send(JSON.stringify({type: "name_new", data: name,icon:pfp}));
+                socket.send(JSON.stringify({type: "name_new", data: name, icon: pfp}));
             };
 
             socket.onmessage = function(event) {
@@ -41,23 +48,23 @@ window.onload = function() {
                             messagesUl.appendChild(li);
                             break;
                         case "message":
-                            //ADD PFP HERE
                             li.innerHTML = `<img src="/static/assets/${message.icon}.png" class="pfp"> ${message.data}`;
-                            //li.innerText = message["data"];
                             messagesUl.appendChild(li);
                             break;
+                        //Highlight
                         case "message_mention":
-                            li.innerHTML = `<mark>${message.data}</mark>`;
+                            li.innerHTML = `<img src="/static/assets/${message.icon}.png" class="pfp"> <mark>${message.data}</mark>`;
                             messagesUl.appendChild(li);
                             break;
+                        //Italics
                         case "message_whisper":
-                            li.innerHTML = `<i>${message.data}</i>`;
+                            li.innerHTML = `<img src="/static/assets/${message.icon}.png" class="pfp"> <i>${message.data}</i>`;
                             messagesUl.appendChild(li);
                             break;
                         case "name_request_response":
                             if (message["bool"]) {
                                 localStorage.setItem("chatName", message["data"]);
-                                socket.send(JSON.stringify({type: "name_change", data: message["data"],icon:pfp}));
+                                socket.send(JSON.stringify({type: "name_change", data: message["data"], icon: pfp}));
                             } else {
                                 alert("Name already taken");
                             }
@@ -78,12 +85,19 @@ window.onload = function() {
             socket.onerror = function(error) {
                 console.error("WebSocket error:", error);
             };
+
+            document.getElementById("messageInput").addEventListener("keyup", function(event) {
+                if (event.key === "Enter") {
+                    sendMessage();
+                }
+            });
+
         } else {
             window.location.href = "/";  // Redirect to the name entry page if no name is found
         }
     }
 };
-
+//Retrieves selected pfp index page
 function getPfp() {
     const selectedPfp = document.querySelector('input[name="pfpS"]:checked');
     if (selectedPfp) {
@@ -91,7 +105,7 @@ function getPfp() {
     }
     return null;
 }
-
+//Sets original name index
 function sendName() {
     const nameInput = document.getElementById("nameInput");
     const name = nameInput.value;
@@ -101,7 +115,7 @@ function sendName() {
         alert("Name is required to join the chat.");
     }
 }
-
+//Sending message chat
 function sendMessage() {
     const messageInput = document.getElementById("messageInput");
     const message = messageInput.value;
@@ -112,7 +126,7 @@ function sendMessage() {
         }
     }
 }
-
+//Chaning name chat
 function changeName() {
     const nameInput = document.getElementById("messageInput");
     const name = nameInput.value;
@@ -123,10 +137,3 @@ function changeName() {
         alert("Name cannot be empty");
     }
 }
-
-// Event listener for sending messages on Enter key press
-document.getElementById("messageInput").addEventListener("keyup", function(event) {
-    if (event.key === "Enter") {
-        sendMessage();
-    }
-});

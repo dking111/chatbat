@@ -1,2 +1,2 @@
-string = "a as da  sad asd asd"
-print(string.split(" "))
+client = None
+print(client==True)

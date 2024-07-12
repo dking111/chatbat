@@ -44,14 +44,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     #distributes messages accordingly
                     sender_name = websocket_clients.get(websocket, "Unknown")["name"]
                     sender_pfp = websocket_clients.get(websocket, "Unknown")["pfp"]
-                    print(f"sender_pfp: {sender_pfp}")
                     #whispers
                     if len(whispers) > 0:
                         for client_name in whispers:
                             client = await get_key_by_value(websocket_clients, client_name)
-                            await client.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}", "icon":sender_pfp}))
                             if client!=websocket:
                                 await websocket.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}", "icon":sender_pfp}))
+                            if client:
+                                await client.send_text(json.dumps({"type": "message_whisper", "data": f"{sender_name}: {message}", "icon":sender_pfp}))
+
                     else:
                         #mentions
                         for client in websocket_clients:
@@ -103,7 +104,7 @@ async def chat(request: Request):
 #helper function for finding dictionary key
 async def get_key_by_value(d, value):
     for k, v in d.items():
-        if v == value:
+        if v["name"] == value:
             return k
     return None
 
@@ -112,8 +113,5 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
-#ROADMAP
-#@users done
-#Enter key, message cleanup done
-#whispers  done
-#profile pics?... maybe choose from a range
+
+

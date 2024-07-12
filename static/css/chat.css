@@ -75,3 +75,11 @@ button:hover {
 .message-content {
     flex: 1;
 }
+
+#logo{
+    position: absolute;
+    max-width: 200px;
+    max-height: 200px;
+    left: 50px;
+    top: 25px;
+}
